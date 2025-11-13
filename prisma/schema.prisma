@@ -1,0 +1,145 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  name            String
+  image           String?   // URL de foto de perfil de Google (NextAuth usa 'image' no 'picture')
+  gmailApiKey     String?   // Encriptado en backend antes de guardar
+  referenceDate   DateTime? // Fecha informativa para futuras funcionalidades
+  lastImportAt    DateTime? // Última vez que importó emails
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  emailVerified   DateTime? // Para NextAuth
+
+  emails          Email[]
+  tasks           Task[]
+  comments        Comment[]
+  importLogs      ImportLog[]
+  accounts        Account[]
+  sessions        Session[]
+}
+
+model Email {
+  id              String    @id @default(cuid())
+  userId          String
+  gmailId         String    @unique // ID único del email en Gmail API
+  senderId        String    // Email del remitente
+  senderName      String    // Nombre del remitente
+  subject         String
+  body            String    @db.Text // Cuerpo completo del email (HTML)
+  snippet         String    // Primeros 200 caracteres para preview
+  category        String    // "Cliente" | "Lead" | "Interno"
+  receivedAt      DateTime  // Fecha de recepción del email
+  hasTask         Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks           Task[]
+
+  @@index([userId, category])
+  @@index([userId, receivedAt])
+  @@index([senderId])
+}
+
+model Task {
+  id              String    @id @default(cuid())
+  userId          String
+  emailId         String
+  title           String    // Título de la tarea (generado por IA)
+  description     String    @db.Text // Descripción detallada de la tarea
+  priority        String    // "Urgente" | "Alta" | "Media" | "Baja"
+  status          String    @default("Pendiente") // "Pendiente" | "En Progreso" | "Completado"
+  dueDate         DateTime? // Fecha límite estimada por IA
+  aiConfidence    Int       // Confidence score de la IA (0-100)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email           Email     @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  comments        Comment[]
+
+  @@index([userId, status])
+  @@index([userId, priority])
+  @@index([emailId])
+}
+
+model Comment {
+  id              String    @id @default(cuid())
+  userId          String
+  taskId          String
+  content         String    @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task            Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+model ImportLog {
+  id              String    @id @default(cuid())
+  userId          String
+  emailsProcessed Int       // Cantidad de emails procesados
+  emailsWithTasks Int       // Emails que tenían tareas
+  tasksCreated    Int       // Total de tareas creadas
+  startedAt       DateTime  @default(now())
+  completedAt     DateTime?
+  status          String    @default("processing") // "processing" | "completed" | "failed"
+  errorMessage    String?   @db.Text
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, startedAt])
+}
+
+// Modelos requeridos por NextAuth
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
