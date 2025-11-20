@@ -1,134 +1,141 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
-import { getCurrentUser } from "@/lib/auth-utils";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, CheckCircle2 } from "lucide-react";
-import Link from "next/link";
+"use client";
 
-export default async function DashboardPage() {
-  const session = await auth();
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { Header } from "@/components/layout/Header";
+import { EmailBandeja } from "@/components/kanban/EmailBandeja";
+import { KanbanBoard } from "@/components/kanban/KanbanBoard";
+import { ImportModal } from "@/components/modals/ImportModal";
+import { DetailPanel } from "@/components/panel/DetailPanel";
+import { DashboardSkeleton } from "@/components/skeletons/KanbanSkeleton";
+import { useStore, type Email, type Task } from "@/store/useStore";
 
-  if (!session) {
-    redirect("/login");
-  }
+export default function DashboardPage() {
+  const router = useRouter();
+  const { status } = useSession();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
-  const user = await getCurrentUser();
+  const setEmails = useStore((state) => state.setEmails);
+  const setTasks = useStore((state) => state.setTasks);
+  const selectedTaskId = useStore((state) => state.selectedTaskId);
+  const setSelectedTaskId = useStore((state) => state.setSelectedTaskId);
+  const setSelectedEmailId = useStore((state) => state.setSelectedEmailId);
 
-  // Si no tiene Gmail API Key configurada, redirigir a integración
-  if (!user.gmailApiKey) {
-    redirect("/integracion");
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+  // Load data on mount
+  useEffect(() => {
+    async function loadData() {
+      if (status !== "authenticated") return;
+
+      try {
+        // Check configuration
+        const configResponse = await fetch("/api/user/gmail-config");
+        const configData = await configResponse.json();
+
+        if (configResponse.ok && !configData.isConfigured) {
+          router.push("/integracion");
+          return;
+        }
+
+        // Load emails and tasks in parallel
+        const [emailsRes, tasksRes] = await Promise.all([
+          fetch("/api/emails"),
+          fetch("/api/tasks"),
+        ]);
+
+        if (emailsRes.ok) {
+          const emailsData = await emailsRes.json();
+          // Parse dates from ISO strings
+          const emails: Email[] = (emailsData.emails || []).map((e: Email & { receivedAt: string; createdAt: string }) => ({
+            ...e,
+            receivedAt: new Date(e.receivedAt),
+            createdAt: new Date(e.createdAt),
+          }));
+          setEmails(emails);
+        }
+
+        if (tasksRes.ok) {
+          const tasksData = await tasksRes.json();
+          // Parse dates from ISO strings
+          const tasks: Task[] = (tasksData.tasks || []).map((t: Task & { createdAt: string; updatedAt: string; dueDate: string | null }) => ({
+            ...t,
+            createdAt: new Date(t.createdAt),
+            updatedAt: new Date(t.updatedAt),
+            dueDate: t.dueDate ? new Date(t.dueDate) : null,
+          }));
+          setTasks(tasks);
+        }
+      } catch (error) {
+        console.error("Error loading data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadData();
+  }, [status, router, setEmails, setTasks]);
+
+  // Handle task click
+  const handleTaskClick = (taskId: string) => {
+    setSelectedTaskId(taskId);
+  };
+
+  // Handle panel close
+  const handlePanelClose = () => {
+    setSelectedTaskId(null);
+  };
+
+  // Handle email click
+  const handleEmailClick = (emailId: string) => {
+    setSelectedEmailId(emailId);
+    // TODO: Filter tasks by email or show email detail
+  };
+
+  if (status === "loading" || isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
+        <Header showSearch showFilters />
+        <DashboardSkeleton />
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 dark:from-gray-950 dark:to-blue-950/30 p-8">
-      <div className="max-w-4xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Dashboard
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Bienvenido, {user.name}
-            </p>
-          </div>
-          <Link href="/api/auth/signout">
-            <Button variant="outline">Cerrar Sesión</Button>
-          </Link>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
+      <Header showSearch showFilters />
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Email Sidebar */}
+        <EmailBandeja
+          onImportClick={() => setIsImportModalOpen(true)}
+          onEmailClick={handleEmailClick}
+        />
+
+        {/* Kanban Board */}
+        <div className="flex-1 p-4 overflow-hidden">
+          <KanbanBoard onTaskClick={handleTaskClick} />
         </div>
-
-        {/* Welcome Card */}
-        <Card className="border-0 shadow-lg">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-950 dark:to-indigo-950">
-                <CheckCircle2 className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <CardTitle>¡Configuración Completa!</CardTitle>
-                <CardDescription>
-                  Tu cuenta está lista para usar Email Kanban AI
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-3">
-              <StatusItem
-                icon={<Mail className="h-4 w-4" />}
-                text="Autenticación con Google"
-                status="completed"
-              />
-              <StatusItem
-                icon={<CheckCircle2 className="h-4 w-4" />}
-                text="Gmail API configurada"
-                status="completed"
-              />
-            </div>
-
-            <div className="pt-4 border-t">
-              <p className="text-sm text-muted-foreground">
-                El resto de las funcionalidades (Kanban, importación de emails, clasificación con IA)
-                se implementarán en los siguientes sprints.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* User Info Card */}
-        <Card className="border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle>Información de Usuario</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <InfoRow label="Email" value={user.email} />
-            <InfoRow label="Nombre" value={user.name} />
-            <InfoRow label="Gmail API Key" value={user.gmailApiKey ? "Configurada ✓" : "No configurada"} />
-            <InfoRow
-              label="Última importación"
-              value={user.lastImportAt ? new Date(user.lastImportAt).toLocaleDateString() : "Nunca"}
-            />
-          </CardContent>
-        </Card>
       </div>
-    </div>
-  );
-}
 
-function StatusItem({
-  icon,
-  text,
-  status,
-}: {
-  icon: React.ReactNode;
-  text: string;
-  status: "completed" | "pending";
-}) {
-  return (
-    <div className="flex items-center gap-3 text-sm">
-      <div
-        className={`flex h-8 w-8 items-center justify-center rounded-lg ${
-          status === "completed"
-            ? "bg-green-100 dark:bg-green-950 text-green-600 dark:text-green-400"
-            : "bg-gray-100 dark:bg-gray-900 text-gray-400"
-        }`}
-      >
-        {icon}
-      </div>
-      <span className="text-muted-foreground">{text}</span>
-      {status === "completed" && (
-        <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 ml-auto" />
-      )}
-    </div>
-  );
-}
+      {/* Import Modal */}
+      <ImportModal
+        open={isImportModalOpen}
+        onOpenChange={setIsImportModalOpen}
+      />
 
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between items-center py-2 border-b last:border-0">
-      <span className="text-sm font-medium text-muted-foreground">{label}</span>
-      <span className="text-sm font-mono">{value}</span>
+      {/* Detail Panel */}
+      <DetailPanel
+        taskId={selectedTaskId}
+        onClose={handlePanelClose}
+      />
     </div>
   );
 }

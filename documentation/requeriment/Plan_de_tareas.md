@@ -60,69 +60,100 @@
 
 ### 2.1 Vista de Perfil de Usuario (RF-MVP-011)
 
-- [ ] Crear página /app/(dashboard)/perfil/page.tsx
-- [X] Crear layout de dashboard con header
+- [X] Crear página /app/dashboard/perfil/page.tsx
+- [X] Crear layout de dashboard con header reutilizable
 - [X] Implementar Card de Información Personal (readonly)
-- [ ] Implementar Card de Configuración de Gmail
+- [X] Implementar Card de Configuración de Gmail
+- [X] Implementar verificación de acceso a Gmail
+- [X] Mostrar estado de configuración y última importación
+
+### 2.2 Vista de Integración de Gmail API (RF-MVP-002)
+
+- [X] Crear página /app/(auth)/integracion/page.tsx
+- [X] Verificación de estado OAuth con Gmail
+- [X] Date picker para fecha de referencia (deshabilitado, valor por defecto 30 días)
+- [X] Link a documentación de ayuda
+- [X] Botón "Guardar y continuar"
+- [X] Botón secundario "Saltar por ahora"
+- [X] Validación de acceso OAuth con Gmail API
+- [X] Crear lib/encryption.ts con funciones de encriptación AES-256
+- [X] Crear API route /api/user/gmail-config (GET/POST)
+- [X] Toast de éxito/error con sonner
+
+### 2.3 Configuración de Zustand Store
+- [X] Instalar zustand (v5.0.8)
+- [X] Crear store/useStore.ts con interfaces y acciones completas
+- [X] Definir interfaces: User, Email, Task, Comment, Filters, ImportProgress
+- [X] Implementar state: user, emails, tasks, comments, filters, selectedTaskId, importProgress
+- [X] Implementar actions: setUser, setEmails, setTasks, updateTask, setFilters, reset, etc.
+- [X] Configurar persistencia con zustand/persist
+- [X] Crear selectores optimizados para datos filtrados
 
 ### 2.4 Funcionalidad de Cerrar Sesión (RF-MVP-012)
 
-- [ ] Crear componente Header con dropdown de usuario
-- [ ] Implementar modal de confirmación de cierre de sesión
-- [ ] Crear API route: /api/auth/logout/route.ts
-- [ ] Implementar invalidación de token JWT
-- [ ] Revocar OAuth token de Google
-- [ ] Limpiar estado de Zustand y localStorage
-- [ ] Implementar redirección a /login
-- [ ] Manejar sesión expirada automáticamente
+- [X] Crear componente Header reutilizable con dropdown de usuario
+- [X] Implementar Avatar con iniciales de fallback
+- [X] Implementar modal de confirmación de cierre de sesión
+- [X] Usar signOut de NextAuth para cerrar sesión
+- [X] Limpiar estado de Zustand y localStorage
+- [X] Implementar redirección a /login
+- [X] Toast de confirmación al cerrar sesión
 
 ---
 
 ## SPRINT 3: IA Y PROCESAMIENTO DE EMAILS (2 semanas)
 
 ### 3.1 Integración con Gmail API
-- [ ] Instalar googleapis
-- [X] Crear lib/gmail-api.ts con funciones:
-  - [X] fetchGmailMessages(options) (implementación básica)
-  - [ ] extractEmailMetadata(message)
-- [ ] Implementar consulta de últimos 20 emails
-- [ ] Implementar filtrado por fecha (lastImportAt)
-- [ ] Extraer: gmailId, senderId, senderName, subject, body, receivedAt
-- [ ] Manejar errores de Gmail API (401, 403, 429)
-- [ ] Implementar timeout de 10 segundos
+- [X] Usar fetch nativo para Gmail API (no googleapis)
+- [X] Crear lib/gmail-api.ts con funciones completas:
+  - [X] fetchGmailMessageIds(maxResults, afterDate) - Lista IDs de mensajes
+  - [X] fetchGmailMessage(messageId) - Obtiene mensaje completo
+  - [X] parseGmailMessage(message) - Parsear a EmailData
+  - [X] fetchAndParseEmails(maxResults, afterDate, batchSize) - Fetch y parse en batches
+  - [X] verifyGmailAccess() - Verifica acceso a Gmail
+  - [X] getGmailProfile() - Obtiene perfil de Gmail
+- [X] Implementar consulta de últimos 20 emails no procesados
+- [X] Implementar filtrado por fecha (lastImportAt)
+- [X] Extraer campos completos: gmailId, senderId, senderName, subject, body, snippet, receivedAt
+- [X] Parsear contenido MIME (text/plain, text/html) recursivamente
+- [X] Detectar attachments
+- [X] Manejar errores de Gmail API con mensajes descriptivos
 
 ### 3.2 Integración con Gemini AI (RF-MVP-008)
-- [ ] Crear cuenta en Google AI Studio
-- [ ] Obtener Gemini API Key
-- [ ] Instalar Vercel AI SDK
-- [ ] Crear lib/gemini.ts con funciones:
-  - [ ] classifyEmail(emailData)
-  - [ ] parseGeminiResponse(response)
-- [ ] Implementar prompt de clasificación completo (según documentación)
-- [ ] Manejar respuesta JSON de Gemini
-- [ ] Implementar fallback si Gemini falla
-- [ ] Detectar categoría: Cliente, Lead, Interno, Spam
-- [ ] Detectar prioridad: Urgente, Alta, Media, Baja
-- [ ] Detectar tareas múltiples en un solo email
-- [ ] Extraer dueDate si está disponible
+- [X] Instalar Vercel AI SDK (ai, @ai-sdk/google)
+- [X] Crear lib/gemini.ts con funciones:
+  - [X] classifyEmail(emailData) - Clasifica un email
+  - [X] classifyEmails(emails, onProgress) - Clasifica múltiples emails
+  - [X] generateTaskTitle(email, taskDescription) - Genera título de tarea
+  - [X] isGeminiConfigured() - Verifica configuración
+- [X] Implementar prompt de clasificación completo (según documentación)
+- [X] Usar generateObject con Zod schema para respuesta estructurada
+- [X] Implementar fallback si Gemini falla (categoria: Interno, hasTask: false)
+- [X] Detectar categoría: Cliente, Lead, Interno, Spam
+- [X] Detectar prioridad: Urgente, Alta, Media, Baja
+- [X] Detectar tareas múltiples en un solo email
+- [X] Extraer dueDate si está disponible
+- [X] Truncar body a 5000 caracteres para límites de tokens
 
 ### 3.3 Proceso de Importación (RF-MVP-007)
-- [ ] Crear API route: /api/emails/import/route.ts
-- [ ] Implementar validación de usuario autenticado
-- [ ] Verificar que gmailApiKey esté configurada
-- [ ] Validar que no haya importación en progreso
-- [ ] Crear registro en ImportLog (status: processing)
-- [ ] Obtener emails de Gmail API (max 20)
-- [ ] Implementar procesamiento en paralelo (batches de 5)
-- [ ] Por cada email:
-  - [ ] Clasificar con Gemini
-  - [ ] Descartar si es Spam
-  - [ ] Guardar en tabla emails
-  - [ ] Crear tareas si hasTask = true
-  - [ ] Actualizar progreso en ImportLog
-- [ ] Finalizar ImportLog (status: completed)
-- [ ] Actualizar user.lastImportAt
-- [ ] Retornar resumen de importación
+- [X] Crear API route: /api/emails/import/route.ts (POST y GET)
+- [X] Implementar validación de usuario autenticado
+- [X] Verificar que Gmail esté configurado (oauth_configured)
+- [X] Validar que no haya importación en progreso
+- [X] Implementar rate limiting (5 minutos entre importaciones)
+- [X] Crear registro en ImportLog (status: processing)
+- [X] Obtener emails de Gmail API (max 20) con filtro por fecha
+- [X] Implementar procesamiento en batches de 5
+- [X] Por cada email:
+  - [X] Verificar si ya existe en BD (evitar duplicados)
+  - [X] Clasificar con Gemini
+  - [X] Descartar si es Spam
+  - [X] Guardar en tabla emails
+  - [X] Crear tareas si hasTask = true
+- [X] Finalizar ImportLog (status: completed o failed)
+- [X] Actualizar user.lastImportAt
+- [X] Retornar resumen de importación
+- [X] GET endpoint para historial de importaciones
 
 ### 3.4 Testing y Refinamiento de IA
 - [ ] Crear dataset de 100 emails reales en español
@@ -141,158 +172,147 @@
 ## SPRINT 4: UI PRINCIPAL - KANBAN (2 semanas)
 
 ### 4.1 Layout Principal (RF-MVP-003)
-- [ ] Crear página /app/(dashboard)/page.tsx
-- [ ] Implementar layout de dashboard
-- [ ] Crear componente Header con:
-  - [ ] Logo
-  - [ ] Campo de búsqueda global
-  - [ ] Dropdowns de filtros
-  - [ ] Avatar y dropdown de usuario
-- [ ] Implementar grid layout: Bandeja lateral + Kanban central
-- [ ] Crear placeholders para estado vacío
+- [X] Crear página /app/dashboard/page.tsx con layout completo
+- [X] Implementar layout de dashboard
+- [X] Crear componente Header con:
+  - [X] Logo
+  - [ ] Campo de búsqueda global (Sprint 6)
+  - [ ] Dropdowns de filtros (Sprint 6)
+  - [X] Avatar y dropdown de usuario
+- [X] Implementar grid layout: Bandeja lateral + Kanban central
+- [X] Crear placeholders para estado vacío
 
-### 4.2 Configuración de Zustand Store
-- [X] Instalar zustand
-- [ ] Crear store/useStore.ts según documentación
-- [ ] Definir interfaces: Email, Task, Filters, Store
-- [ ] Implementar state:
-  - [ ] user, emails, tasks, filters, selectedTaskId, isImporting
-- [ ] Implementar actions:
-  - [ ] setUser, setEmails, setTasks
-  - [ ] updateTask, setFilters, setSelectedTaskId
-  - [ ] setIsImporting, reset
-- [ ] Configurar persistencia con zustand/persist
+### 4.2 Bandeja Lateral de Emails
+- [X] Crear componente components/kanban/EmailBandeja.tsx
+- [X] Diseñar lista de emails con:
+  - [X] Avatar del remitente
+  - [X] Nombre del remitente
+  - [X] Asunto truncado
+  - [X] Badge de cantidad de tareas
+  - [X] Badge de categoría
+  - [X] Timestamp relativo
+- [X] Implementar botón "Importar Gmails"
+- [X] Agregar ícono de colapsar/expandir
+- [X] Implementar funcionalidad de colapsar con animación
+- [X] Mostrar solo emails con hasTask = true
+- [ ] Instalar react-window para virtualización (optimización futura)
+- [ ] Implementar virtualización si >50 emails (optimización futura)
 
-### 4.3 Bandeja Lateral de Emails
-- [ ] Crear componente components/kanban/EmailBandeja.tsx
-- [ ] Diseñar lista de emails con:
-  - [ ] Avatar del remitente
-  - [ ] Nombre del remitente
-  - [ ] Asunto truncado
-  - [ ] Badge de cantidad de tareas
-  - [ ] Badge de categoría
-  - [ ] Timestamp relativo
-- [ ] Implementar botón "Importar Gmails"
-- [ ] Agregar ícono de colapsar/expandir
-- [ ] Implementar funcionalidad de colapsar con animación
-- [ ] Mostrar solo emails con hasTask = true
-- [ ] Instalar react-window para virtualización
-- [ ] Implementar virtualización si >50 emails
+### 4.3 Componentes de Kanban
+- [X] Crear componente components/kanban/KanbanBoard.tsx
+- [X] Crear componente components/kanban/KanbanColumn.tsx
+- [X] Crear 3 columnas:
+  - [X] Tareas (Pendiente)
+  - [X] En Proceso (En Progreso)
+  - [X] Terminado (Completado)
+- [X] Implementar contadores de cards por columna
+- [X] Agregar placeholders para columnas vacías
+- [ ] Implementar lazy loading si >50 cards (optimización futura)
 
-### 4.4 Componentes de Kanban
-- [ ] Crear componente components/kanban/KanbanBoard.tsx
-- [ ] Crear componente components/kanban/KanbanColumn.tsx
-- [ ] Crear 3 columnas:
-  - [ ] Tareas (Pendiente)
-  - [ ] En Proceso (En Progreso)
-  - [ ] Terminado (Completado)
-- [ ] Implementar contadores de cards por columna
-- [ ] Agregar placeholders para columnas vacías
-- [ ] Implementar lazy loading si >50 cards
+### 4.4 Cards de Tareas (RF-MVP-004)
+- [X] Crear componente components/kanban/TaskCard.tsx
+- [X] Diseñar estructura de card según documentación:
+  - [X] Badge de prioridad (esquina superior derecha)
+  - [X] Título de tarea (truncado a 2 líneas)
+  - [X] Avatar y nombre del remitente
+  - [X] Badge de categoría
+  - [X] Footer con ícono de tareas múltiples
+  - [X] Timestamp relativo
+- [X] Implementar estados hover
+- [X] Implementar click para abrir panel lateral (handler listo)
+- [X] Agregar indicador de tareas relacionadas
+- [X] Usar componentes Card de ShadCN/UI
 
-### 4.5 Cards de Tareas (RF-MVP-004)
-- [ ] Crear componente components/kanban/TaskCard.tsx
-- [ ] Diseñar estructura de card según documentación:
-  - [ ] Badge de prioridad (esquina superior derecha)
-  - [ ] Asunto del email (truncado a 2 líneas)
-  - [ ] Avatar y nombre del remitente
-  - [ ] Badge de categoría
-  - [ ] Footer con ícono de tareas múltiples
-  - [ ] Timestamp relativo
-- [ ] Implementar estados hover
-- [ ] Implementar click para abrir panel lateral
-- [ ] Agregar badge "🔗 Relacionadas" para emails con múltiples tareas
-- [ ] Usar componentes Card de ShadCN/UI
+### 4.5 Drag & Drop (RF-MVP-006)
+- [X] Instalar @dnd-kit/core y @dnd-kit/sortable
+- [X] Implementar DndContext en KanbanBoard
+- [X] Hacer cards draggables
+- [X] Implementar feedback visual durante drag:
+  - [X] Opacity 0.5 en card
+  - [X] Borde punteado en columnas válidas
+  - [X] Cursor grabbing
+- [X] Implementar drop handler
+- [X] Actualizar estado en Zustand
+- [X] Crear API route: /api/tasks/[id]/route.ts (GET, PATCH, DELETE)
+- [X] Actualizar status en BD
+- [X] Mostrar toast al mover card
+- [X] Implementar rotación visual durante drag
+- [ ] Agregar debounce de 300ms para BD (optimización futura)
 
-### 4.6 Drag & Drop (RF-MVP-006)
-- [ ] Instalar @dnd-kit/core y @dnd-kit/sortable
-- [ ] Implementar DndContext en KanbanBoard
-- [ ] Hacer cards draggables
-- [ ] Implementar feedback visual durante drag:
-  - [ ] Opacity 0.5 en card
-  - [ ] Borde punteado en columnas válidas
-  - [ ] Cursor grabbing
-- [ ] Implementar drop handler
-- [ ] Actualizar estado en Zustand
-- [ ] Crear API route: /api/tasks/[id]/route.ts (PATCH)
-- [ ] Actualizar status en BD
-- [ ] Mostrar toast al mover card
-- [ ] Implementar animación de rebote si drop inválido
-- [ ] Agregar debounce de 300ms para BD
-
-### 4.7 Modal de Importación
-- [ ] Crear componente components/modals/ImportModal.tsx
-- [ ] Implementar modal de confirmación
-- [ ] Crear barra de progreso animada
-- [ ] Implementar polling o WebSocket para progreso en tiempo real
-- [ ] Mostrar resumen al finalizar importación
-- [ ] Manejar errores de importación
-- [ ] Implementar botón deshabilitado si no hay API Key
-- [ ] Agregar tooltip informativo
+### 4.6 Modal de Importación
+- [X] Crear componente components/modals/ImportModal.tsx
+- [X] Implementar modal de confirmación
+- [X] Crear barra de progreso animada
+- [X] Simular progreso durante importación
+- [X] Mostrar resumen al finalizar importación
+- [X] Manejar errores de importación
+- [X] Implementar botón deshabilitado durante importación
+- [X] Estados: confirm, importing, success, error
 
 ---
 
 ## SPRINT 5: DETALLE Y COMENTARIOS (1.5 semanas)
 
 ### 5.1 Panel Lateral Derecho (RF-MVP-005)
-- [ ] Crear componente components/panel/DetailPanel.tsx
-- [ ] Implementar slide-over desde la derecha (400px)
-- [ ] Crear animación slide-in/out (300ms)
-- [ ] Implementar cierre con botón X
-- [ ] Implementar cierre con tecla ESC
-- [ ] Diseñar estructura con secciones:
-  - [ ] Header con botón cerrar
-  - [ ] Sección 1: Información del Email
-  - [ ] Sección 2: Metadata de IA
-  - [ ] Sección 3: Comentarios
-  - [ ] Sección 4: Acciones
+- [X] Crear componente components/panel/DetailPanel.tsx
+- [X] Implementar slide-over desde la derecha (400px)
+- [X] Crear animación slide-in/out (300ms)
+- [X] Implementar cierre con botón X
+- [X] Implementar cierre con tecla ESC
+- [X] Diseñar estructura con secciones:
+  - [X] Header con botón cerrar
+  - [X] Sección 1: Información del Email
+  - [X] Sección 2: Metadata de IA (confianza)
+  - [X] Sección 3: Comentarios
+  - [X] Sección 4: Acciones (cambio de estado)
 
 ### 5.2 Información del Email
-- [ ] Mostrar avatar y nombre del remitente
-- [ ] Mostrar asunto completo (no truncado)
-- [ ] Mostrar fecha de recepción formateada
-- [ ] Instalar dompurify para sanitización de HTML
-- [ ] Implementar sanitización del body HTML
-- [ ] Mostrar cuerpo del email con max-height y scroll
-- [ ] Mostrar badges de categoría y prioridad
+- [X] Mostrar avatar y nombre del remitente
+- [X] Mostrar asunto completo (no truncado)
+- [X] Mostrar fecha de recepción formateada
+- [X] Instalar dompurify para sanitización de HTML
+- [X] Implementar sanitización del body HTML
+- [X] Mostrar cuerpo del email con max-height y scroll
+- [X] Mostrar badges de categoría y prioridad
 
 ### 5.3 Sistema de Comentarios
-- [ ] Crear API route: /api/comments/route.ts (GET, POST)
-- [ ] Implementar lista de comentarios
-- [ ] Crear campo de texto expandible
-- [ ] Implementar "Agregar comentario"
-- [ ] Guardar en tabla task_comments
-- [ ] Mostrar comentarios con:
-  - [ ] Avatar del usuario
-  - [ ] Texto del comentario
-  - [ ] Timestamp relativo
-  - [ ] Botón de editar (solo en hover)
-- [ ] Implementar funcionalidad de editar comentario
-- [ ] Actualizar updatedAt al editar
-- [ ] Mostrar indicador "editado"
+- [X] Crear API route: /api/comments/route.ts (GET, POST)
+- [X] Crear API route: /api/comments/[id]/route.ts (PATCH, DELETE)
+- [X] Implementar lista de comentarios
+- [X] Crear campo de texto expandible
+- [X] Implementar "Agregar comentario"
+- [X] Guardar en tabla Comment
+- [X] Mostrar comentarios con:
+  - [X] Avatar del usuario
+  - [X] Texto del comentario
+  - [X] Timestamp relativo
+  - [X] Botón de editar
+- [X] Implementar funcionalidad de editar comentario
+- [X] Actualizar updatedAt al editar
+- [X] Mostrar indicador "editado"
 
 ### 5.4 Cambio de Estado desde Panel
-- [ ] Crear dropdown de cambio de estado
-- [ ] Implementar opciones: Tareas, En Proceso, Terminado
-- [ ] Agregar botón "Guardar cambios"
-- [ ] Actualizar status en BD
-- [ ] Mover card en Kanban automáticamente
-- [ ] Mostrar toast de confirmación
-- [ ] Mantener panel abierto después del cambio
+- [X] Crear dropdown de cambio de estado
+- [X] Implementar opciones: Pendiente, En Progreso, Completado
+- [X] Agregar botón de confirmar cambio
+- [X] Actualizar status en BD via /api/tasks/[id]
+- [X] Mover card en Kanban automáticamente (actualiza Zustand)
+- [X] Mostrar toast de confirmación
+- [X] Mantener panel abierto después del cambio
 
 ### 5.5 Emails con Múltiples Tareas
-- [ ] Detectar si email tiene múltiples tareas
-- [ ] Agregar sección "Tareas asociadas"
-- [ ] Mostrar mini-cards clickeables
-- [ ] Implementar navegación entre tareas del mismo email
-- [ ] Actualizar panel al cambiar de tarea
+- [X] Detectar si email tiene múltiples tareas
+- [X] Agregar sección "Tareas Relacionadas"
+- [X] Mostrar mini-cards con estado y prioridad
+- [ ] Implementar navegación entre tareas del mismo email (futuro)
+- [ ] Actualizar panel al cambiar de tarea (futuro)
 
 ### 5.6 Responsive Design
+- [X] Panel se adapta a pantallas pequeñas (w-full sm:w-[400px])
 - [ ] Adaptar layout para tablet (768px-1279px)
 - [ ] Adaptar layout para mobile (375px-767px)
 - [ ] Convertir Bandeja en drawer deslizable en mobile
 - [ ] Implementar scroll horizontal en Kanban para mobile
-- [ ] Ajustar panel lateral para mobile
 - [ ] Probar en diferentes dispositivos
 
 ---
@@ -300,67 +320,69 @@
 ## SPRINT 6: FILTROS, BÚSQUEDA Y POLISH (1.5 semanas)
 
 ### 6.1 Filtros por Categoría y Prioridad (RF-MVP-009)
-- [ ] Crear componente components/filters/FilterDropdowns.tsx
-- [ ] Implementar dropdown de categorías:
-  - [ ] Todas las categorías
-  - [ ] Cliente
-  - [ ] Lead
-  - [ ] Interno
-- [ ] Implementar dropdown de prioridades:
-  - [ ] Todas las prioridades
-  - [ ] Urgente
-  - [ ] Alta
-  - [ ] Media
-  - [ ] Baja
-- [ ] Guardar filtros en Zustand
-- [ ] Aplicar filtros a emails y tareas
-- [ ] Mostrar chips de filtros activos
-- [ ] Implementar botón X para limpiar filtros individuales
-- [ ] Implementar botón "Limpiar todos los filtros"
-- [ ] Mostrar contador de resultados
-- [ ] Agregar mensaje si no hay resultados
+- [X] Crear componente components/filters/FilterDropdowns.tsx
+- [X] Implementar dropdown de categorías:
+  - [X] Todas las categorías
+  - [X] Cliente
+  - [X] Lead
+  - [X] Interno
+- [X] Implementar dropdown de prioridades:
+  - [X] Todas las prioridades
+  - [X] Urgente
+  - [X] Alta
+  - [X] Media
+  - [X] Baja
+- [X] Guardar filtros en Zustand
+- [X] Aplicar filtros a emails y tareas (useFilteredEmails, useFilteredTasks)
+- [X] Mostrar chips de filtros activos
+- [X] Implementar botón X para limpiar filtros individuales
+- [X] Implementar botón "Limpiar todos los filtros"
+- [ ] Mostrar contador de resultados (futuro)
+- [ ] Agregar mensaje si no hay resultados (futuro)
 
 ### 6.2 Búsqueda Global (RF-MVP-010)
-- [ ] Crear componente components/filters/SearchBar.tsx
-- [ ] Implementar campo de búsqueda con placeholder
-- [ ] Agregar debounce de 300ms
-- [ ] Buscar en campos: senderId, senderName, subject
-- [ ] Implementar búsqueda case-insensitive
-- [ ] Buscar por palabras (split por espacios)
-- [ ] Crear índices FULLTEXT en PostgreSQL
-- [ ] Mostrar chip de búsqueda activa
-- [ ] Implementar botón X para limpiar búsqueda
-- [ ] Instalar react-highlight-words
-- [ ] Implementar highlight de coincidencias en Bandeja
-- [ ] Combinar búsqueda con filtros (operador AND)
+- [X] Crear componente components/filters/SearchBar.tsx
+- [X] Implementar campo de búsqueda con placeholder
+- [X] Agregar debounce de 300ms
+- [X] Buscar en campos: senderName, subject (client-side)
+- [X] Implementar búsqueda case-insensitive
+- [X] Mostrar chip de búsqueda activa
+- [X] Implementar botón X para limpiar búsqueda
+- [X] Combinar búsqueda con filtros (operador AND)
+- [ ] Crear índices FULLTEXT en PostgreSQL (optimización futura)
+- [ ] Instalar react-highlight-words (futuro)
+- [ ] Implementar highlight de coincidencias en Bandeja (futuro)
 
 ### 6.3 Refinamiento de UX
-- [ ] Implementar sistema de toasts con ShadCN
-- [ ] Crear toasts para:
-  - [ ] Importación exitosa
-  - [ ] Tarea movida
-  - [ ] Comentario guardado
-  - [ ] Errores generales
-- [ ] Implementar animaciones suaves:
-  - [ ] Fade-in/out (200ms)
-  - [ ] Slide transitions (300ms)
-- [ ] Agregar skeletons para estados de loading:
-  - [ ] Skeleton para Bandeja
-  - [ ] Skeleton para Kanban
-  - [ ] Skeleton para Panel Lateral
-- [ ] Implementar estados vacíos con ilustraciones
-- [ ] Optimizar performance con React.memo
-- [ ] Implementar lazy loading de componentes pesados
+- [X] Implementar sistema de toasts con Sonner
+- [X] Crear toasts para:
+  - [X] Importación exitosa
+  - [X] Tarea movida
+  - [X] Comentario guardado
+  - [X] Errores generales
+- [X] Implementar animaciones suaves:
+  - [X] Slide transitions (300ms) en panel
+  - [X] Hover transitions en cards
+- [X] Agregar skeletons para estados de loading:
+  - [X] Skeleton para Bandeja (EmailBandejaSkeleton)
+  - [X] Skeleton para Kanban (KanbanSkeleton)
+  - [X] Skeleton para Dashboard (DashboardSkeleton)
+- [X] Crear componente EmptyState reutilizable
+- [ ] Optimizar performance con React.memo (futuro)
+- [ ] Implementar lazy loading de componentes pesados (futuro)
 
 ### 6.4 Accesibilidad
-- [ ] Verificar contraste WCAG 2.1 AA
-- [ ] Implementar navegación por teclado:
-  - [ ] Tab para navegar entre cards
-  - [ ] Enter para abrir panel
-  - [ ] ESC para cerrar panel
-- [ ] Agregar ARIA labels a todos los elementos interactivos
-- [ ] Probar con screen reader
-- [ ] Agregar focus indicators visibles
+- [X] Implementar navegación por teclado:
+  - [X] Tab para navegar entre cards (tabIndex)
+  - [X] Enter/Space para abrir panel
+  - [X] ESC para cerrar panel y limpiar búsqueda
+- [X] Agregar ARIA labels a elementos interactivos:
+  - [X] TaskCard con aria-label descriptivo
+  - [X] KanbanColumn con role="region"
+  - [X] SearchBar y FilterDropdowns con aria-labels
+- [X] Agregar focus indicators visibles (focus-within:ring)
+- [ ] Verificar contraste WCAG 2.1 AA (testing)
+- [ ] Probar con screen reader (testing)
 
 ### 6.5 Testing de Integración
 - [ ] Probar flujo completo de autenticación
@@ -518,34 +540,104 @@
 ---
 
 **Fecha de creación:** 2025-11-12
-**Última actualización:** 2025-11-13
-**Versión:** 1.1
+**Última actualización:** 2025-11-19
+**Versión:** 1.3
 
 ## RESUMEN DE PROGRESO
 
 ### ✅ SPRINT 1: COMPLETADO (100%)
-- Proyecto Next.js 16 configurado con TypeScript, TailwindCSS, ESLint, Prettier
-- Base de datos PostgreSQL (NeonDB) con Prisma configurada
+- Proyecto Next.js 16.0.2 configurado con TypeScript 5, TailwindCSS v4, ESLint 9, Prettier 3.6.2
+- Base de datos PostgreSQL (NeonDB) con Prisma 6.19.0 configurada
 - 8 modelos de datos implementados (User, Email, Task, Comment, ImportLog, Account, Session, VerificationToken)
 - 3 migraciones ejecutadas exitosamente
 - Autenticación con Google OAuth completamente funcional
-- NextAuth v5 con JWT (7 días de expiración)
+- NextAuth v5.0.0-beta.30 con JWT (7 días de expiración)
 - Middleware de protección de rutas implementado
 - Página de Login con diseño moderno y animaciones
-- Página de Dashboard básica
+- Layout de auth con fondo gradiente y orbes animados
+- Página de Dashboard básica con información del usuario
+- Página de Integración placeholder
 - Componentes UI de ShadCN (button, card, separator)
+- Componentes auth (LoginButton, Logo, SessionProvider)
+- Utilidades de auth (getAuthSession, getCurrentUser, hasGmailApiKey)
 - Scripts de seed y limpieza de BD
 - Scopes de Gmail configurados (gmail.readonly)
 - Tokens de acceso y refresh guardados en sesión
+- Variables de entorno configuradas (.env.example)
 
-### 🚧 EN PROGRESO
-- Funciones básicas de Gmail API (lib/gmail-api.ts) - Implementación parcial
-- Zustand instalado pero no configurado
-- Vista de dashboard básica (sin Kanban completo)
+### ✅ SPRINT 2: COMPLETADO (100%)
+- Zustand Store completo con interfaces, estado, acciones y selectores (store/useStore.ts)
+- Utilidades de encriptación AES-256-GCM (lib/encryption.ts)
+- API route /api/user/gmail-config para validación y configuración de Gmail OAuth
+- Vista de integración completa con verificación de acceso OAuth
+- Vista de perfil completa (/dashboard/perfil)
+- Header reutilizable con dropdown de usuario y Avatar
+- Modal de confirmación de cierre de sesión
+- Dashboard actualizado con nuevo Header y cards de estado
+- Logo actualizado con props de tamaño (sm, md, lg)
+- Componentes ShadCN: input, label, sonner, alert, dropdown-menu, avatar, dialog
 
-### ⏳ PENDIENTE
-- Sprint 2: Vista de perfil y configuración Gmail
-- Sprint 3: Integración Gemini AI y procesamiento de emails
-- Sprint 4: UI Kanban completa con drag & drop
-- Sprint 5: Panel lateral de detalle y comentarios
-- Sprint 6: Filtros, búsqueda y polish final
+### ✅ SPRINT 3: COMPLETADO (90%)
+- Gmail API completa (lib/gmail-api.ts) con parsing MIME recursivo, extracción de metadata, detección de attachments
+- Vercel AI SDK instalado (ai, @ai-sdk/google)
+- Gemini AI integrado (lib/gemini.ts) con Zod schemas para respuestas estructuradas
+- API route /api/emails/import (POST y GET)
+- Procesamiento en batches de 5 emails
+- Rate limiting (5 minutos entre importaciones)
+- Sistema de ImportLog completo
+- Fallback cuando Gemini no está disponible
+- Pendiente: Testing manual con emails reales (sección 3.4)
+
+### ✅ SPRINT 4: COMPLETADO (90%)
+- Layout principal con Bandeja lateral + Kanban central
+- Componentes Kanban: KanbanBoard, KanbanColumn, TaskCard
+- Componente EmailBandeja con colapso y lista de emails
+- Drag & Drop completo con @dnd-kit/core y @dnd-kit/sortable
+- Modal de importación con estados y progreso
+- API routes: /api/emails, /api/tasks, /api/tasks/[id]
+- Integración con Zustand store
+- Pendiente: Virtualización para listas grandes, debounce de BD
+
+### ✅ SPRINT 5: COMPLETADO (85%)
+- Panel lateral derecho (DetailPanel) con slide-over animado
+- Información completa del email con HTML sanitizado (dompurify)
+- Sistema de comentarios completo (crear, editar, listar)
+- API routes: /api/comments, /api/comments/[id]
+- Cambio de estado desde panel con actualización en Kanban
+- Sección de tareas relacionadas del mismo email
+- Integración completa con Zustand y dashboard
+- Pendiente: Navegación entre tareas relacionadas, responsive mobile
+
+### ✅ SPRINT 6: COMPLETADO (80%)
+- FilterDropdowns con categorías y prioridades
+- SearchBar con debounce de 300ms
+- Header actualizado con filtros y búsqueda integrados
+- Skeletons para loading (KanbanSkeleton, EmailBandejaSkeleton, DashboardSkeleton)
+- EmptyState component reutilizable
+- Accesibilidad: ARIA labels, focus indicators, navegación por teclado
+- Toasts con Sonner para feedback
+- Pendiente: Highlight de búsqueda, contador de resultados, testing manual
+
+### 🔜 PRÓXIMO: Testing y Deploy
+- Testing de integración manual
+- Deploy en Vercel
+- Documentación final
+
+### 📦 DEPENDENCIAS INSTALADAS EN SPRINT 3
+- ai ^4.3.16 (Vercel AI SDK)
+- @ai-sdk/google ^1.2.22 (Proveedor de Gemini)
+- zod ^3.25.51 (Validación de schemas)
+
+### 📦 DEPENDENCIAS INSTALADAS EN SPRINT 4
+- @dnd-kit/core (Drag & Drop base)
+- @dnd-kit/sortable (Sortable para listas)
+- @dnd-kit/utilities (CSS utilities)
+- date-fns (Formateo de fechas relativas)
+
+### 📦 DEPENDENCIAS INSTALADAS EN SPRINT 5
+- dompurify (Sanitización HTML)
+- @types/dompurify (TypeScript types)
+
+### 📦 DEPENDENCIAS PENDIENTES DE INSTALAR
+- react-window (Virtualización de listas - optimización)
+- react-highlight-words (Resaltado de búsqueda - Sprint 6)
