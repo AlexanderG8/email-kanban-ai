@@ -35,8 +35,8 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   const setImportProgress = useStore((state) => state.setImportProgress);
-  const addEmails = useStore((state) => state.addEmails);
-  const addTasks = useStore((state) => state.addTasks);
+  const setEmails = useStore((state) => state.setEmails);
+  const setTasks = useStore((state) => state.setTasks);
 
   const handleImport = async () => {
     setImportState("importing");
@@ -84,14 +84,14 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
       const emailsResponse = await fetch("/api/emails");
       if (emailsResponse.ok) {
         const emailsData = await emailsResponse.json();
-        addEmails(emailsData.emails || []);
+        setEmails(emailsData.emails || []);
       }
 
       // Fetch tasks
       const tasksResponse = await fetch("/api/tasks");
       if (tasksResponse.ok) {
         const tasksData = await tasksResponse.json();
-        addTasks(tasksData.tasks || []);
+        setTasks(tasksData.tasks || []);
       }
     } catch (error) {
       console.error("Error fetching updated data:", error);
