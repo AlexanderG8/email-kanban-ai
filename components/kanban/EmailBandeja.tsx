@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useCallback } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import {
@@ -14,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { useStore, useFilteredEmails, type Email } from "@/store/useStore";
+import { useStore, useFilteredEmails, useTasks, type Email } from "@/store/useStore";
 
 interface EmailBandejaProps {
   onImportClick: () => void;
@@ -30,28 +31,34 @@ const categoryColors = {
 export function EmailBandeja({ onImportClick, onEmailClick }: EmailBandejaProps) {
   const isSidebarCollapsed = useStore((state) => state.isSidebarCollapsed);
   const toggleSidebar = useStore((state) => state.toggleSidebar);
-  const tasks = useStore((state) => state.tasks);
+  const tasks = useTasks();
   const selectedEmailId = useStore((state) => state.selectedEmailId);
   const importProgress = useStore((state) => state.importProgress);
 
   // Get filtered emails that have tasks
   const allFilteredEmails = useFilteredEmails();
-  const emailsWithTasks = allFilteredEmails.filter((email) => email.hasTask);
+  const emailsWithTasks = useMemo(
+    () => allFilteredEmails.filter((email) => email.hasTask),
+    [allFilteredEmails]
+  );
 
   // Get task count for an email
-  const getTaskCount = (emailId: string) => {
-    return tasks.filter((task) => task.emailId === emailId).length;
-  };
+  const getTaskCount = useCallback(
+    (emailId: string) => {
+      return tasks.filter((task) => task.emailId === emailId).length;
+    },
+    [tasks]
+  );
 
   // Get initials for avatar
-  const getInitials = (name: string) => {
+  const getInitials = useCallback((name: string) => {
     return name
       .split(" ")
       .map((n) => n[0])
       .join("")
       .toUpperCase()
       .slice(0, 2);
-  };
+  }, []);
 
   // Collapsed state
   if (isSidebarCollapsed) {

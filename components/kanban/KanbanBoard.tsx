@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -16,7 +16,7 @@ import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { toast } from "sonner";
 import { KanbanColumn } from "./KanbanColumn";
 import { TaskCard } from "./TaskCard";
-import { useStore, useFilteredTasks, type Task } from "@/store/useStore";
+import { useStore, useFilteredTasks, useEmails, type Task } from "@/store/useStore";
 
 interface KanbanBoardProps {
   onTaskClick: (taskId: string) => void;
@@ -31,7 +31,7 @@ const COLUMNS: { id: Task["status"]; title: string }[] = [
 export function KanbanBoard({ onTaskClick }: KanbanBoardProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  const emails = useStore((state) => state.emails);
+  const emails = useEmails();
   const tasks = useFilteredTasks();
   const updateTask = useStore((state) => state.updateTask);
 
@@ -47,19 +47,26 @@ export function KanbanBoard({ onTaskClick }: KanbanBoardProps) {
   );
 
   // Get tasks by status
-  const getTasksByStatus = (status: Task["status"]) => {
-    return tasks.filter((task) => task.status === status);
-  };
+  const getTasksByStatus = useCallback(
+    (status: Task["status"]) => {
+      return tasks.filter((task) => task.status === status);
+    },
+    [tasks]
+  );
 
   // Get count of tasks for an email
-  const getRelatedTasksCount = (emailId: string) => {
-    return tasks.filter((task) => task.emailId === emailId).length;
-  };
+  const getRelatedTasksCount = useCallback(
+    (emailId: string) => {
+      return tasks.filter((task) => task.emailId === emailId).length;
+    },
+    [tasks]
+  );
 
   // Find the active task
-  const activeTask = activeId
-    ? tasks.find((task) => task.id === activeId)
-    : null;
+  const activeTask = useMemo(
+    () => (activeId ? tasks.find((task) => task.id === activeId) : null),
+    [activeId, tasks]
+  );
 
   // Handle drag start
   const handleDragStart = (event: DragStartEvent) => {

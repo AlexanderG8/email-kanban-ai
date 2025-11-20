@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { shallow } from "zustand/shallow";
+import { useMemo } from "react";
 
 // Types based on Prisma schema
 export interface User {
@@ -245,24 +247,27 @@ export const useStore = create<Store>()(
 
 // Selector hooks for common use cases
 export const useUser = () => useStore((state) => state.user);
-export const useEmails = () => useStore((state) => state.emails);
-export const useTasks = () => useStore((state) => state.tasks);
+export const useEmails = () => useStore((state) => state.emails, shallow);
+export const useTasks = () => useStore((state) => state.tasks, shallow);
 export const useFilters = () => useStore((state) => state.filters);
 export const useImportProgress = () => useStore((state) => state.importProgress);
 
-// Filtered data selectors
-export const useFilteredEmails = () =>
-  useStore((state) => {
-    let filtered = state.emails;
+// Filtered data selectors with stable references using useMemo
+export const useFilteredEmails = () => {
+  const emails = useStore((state) => state.emails, shallow);
+  const filters = useStore((state) => state.filters);
 
-    if (state.filters.category) {
+  return useMemo(() => {
+    let filtered = emails;
+
+    if (filters.category) {
       filtered = filtered.filter(
-        (email) => email.category === state.filters.category
+        (email) => email.category === filters.category
       );
     }
 
-    if (state.filters.search) {
-      const searchLower = state.filters.search.toLowerCase();
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
       filtered = filtered.filter(
         (email) =>
           email.senderName.toLowerCase().includes(searchLower) ||
@@ -271,28 +276,33 @@ export const useFilteredEmails = () =>
     }
 
     return filtered;
-  });
+  }, [emails, filters.category, filters.search]);
+};
 
-export const useFilteredTasks = () =>
-  useStore((state) => {
-    let filtered = state.tasks;
+export const useFilteredTasks = () => {
+  const tasks = useStore((state) => state.tasks, shallow);
+  const emails = useStore((state) => state.emails, shallow);
+  const filters = useStore((state) => state.filters);
 
-    if (state.filters.priority) {
+  return useMemo(() => {
+    let filtered = tasks;
+
+    if (filters.priority) {
       filtered = filtered.filter(
-        (task) => task.priority === state.filters.priority
+        (task) => task.priority === filters.priority
       );
     }
 
-    if (state.filters.category) {
-      const emailIds = state.emails
-        .filter((email) => email.category === state.filters.category)
+    if (filters.category) {
+      const emailIds = emails
+        .filter((email) => email.category === filters.category)
         .map((email) => email.id);
       filtered = filtered.filter((task) => emailIds.includes(task.emailId));
     }
 
-    if (state.filters.search) {
-      const searchLower = state.filters.search.toLowerCase();
-      const matchingEmailIds = state.emails
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      const matchingEmailIds = emails
         .filter(
           (email) =>
             email.senderName.toLowerCase().includes(searchLower) ||
@@ -305,8 +315,15 @@ export const useFilteredTasks = () =>
     }
 
     return filtered;
-  });
+  }, [tasks, emails, filters.priority, filters.category, filters.search]);
+};
 
 // Task by status selectors
-export const useTasksByStatus = (status: Task["status"]) =>
-  useStore((state) => state.tasks.filter((task) => task.status === status));
+export const useTasksByStatus = (status: Task["status"]) => {
+  const tasks = useStore((state) => state.tasks, shallow);
+
+  return useMemo(
+    () => tasks.filter((task) => task.status === status),
+    [tasks, status]
+  );
+};

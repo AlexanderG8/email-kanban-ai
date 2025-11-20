@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -47,9 +48,12 @@ export function KanbanColumn({
   const colors = columnColors[title as keyof typeof columnColors] || columnColors.Pendiente;
 
   // Get email for a task
-  const getEmailForTask = (emailId: string) => {
-    return emails.find((e) => e.id === emailId);
-  };
+  const getEmailForTask = useCallback(
+    (emailId: string) => {
+      return emails.find((e) => e.id === emailId);
+    },
+    [emails]
+  );
 
   return (
     <div

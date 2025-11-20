@@ -32,7 +32,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { useStore, type Task, type Email, type Comment } from "@/store/useStore";
+import { useStore, useTasks, useEmails, type Task, type Email, type Comment } from "@/store/useStore";
 
 interface DetailPanelProps {
   taskId: string | null;
@@ -67,8 +67,8 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
   const [selectedStatus, setSelectedStatus] = useState<string>("");
   const [isSavingStatus, setIsSavingStatus] = useState(false);
 
-  const tasks = useStore((state) => state.tasks);
-  const emails = useStore((state) => state.emails);
+  const tasks = useTasks();
+  const emails = useEmails();
   const comments = useStore((state) => state.comments);
   const updateTask = useStore((state) => state.updateTask);
   const addComment = useStore((state) => state.addComment);
