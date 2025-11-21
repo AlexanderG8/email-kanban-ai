@@ -68,6 +68,7 @@ export function EmailBandeja({ onImportClick, onEmailClick }: EmailBandejaProps)
           variant="ghost"
           size="icon"
           onClick={toggleSidebar}
+
           className="mb-4"
         >
           <ChevronRight className="h-4 w-4" />
@@ -81,7 +82,7 @@ export function EmailBandeja({ onImportClick, onEmailClick }: EmailBandejaProps)
   }
 
   return (
-    <div className="flex flex-col w-72 border-r bg-gray-50/50">
+    <div className="flex flex-col w-80 border-r bg-gray-50/50">
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b bg-white">
         <div className="flex items-center gap-2">
@@ -105,7 +106,7 @@ export function EmailBandeja({ onImportClick, onEmailClick }: EmailBandejaProps)
       <div className="p-3 border-b">
         <Button
           onClick={onImportClick}
-          className="w-full"
+          className="w-full flex items-center justify-center"
           disabled={importProgress.isImporting}
         >
           {importProgress.isImporting ? (
@@ -177,7 +178,7 @@ function EmailItem({
     <button
       onClick={onClick}
       className={cn(
-        "w-full text-left p-2 rounded-lg transition-colors",
+        "w-75 text-left p-2 rounded-lg transition-colors",
         "hover:bg-white hover:shadow-sm",
         isSelected && "bg-white shadow-sm ring-1 ring-blue-200"
       )}

@@ -259,12 +259,12 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
       {/* Panel */}
       <div
         className={cn(
-          "fixed right-0 top-0 h-full w-full sm:w-[400px] bg-white dark:bg-gray-950 shadow-xl z-50",
-          "transform transition-transform duration-300 ease-out",
+          "fixed right-0 top-0 h-full w-full sm:w-[500px] bg-white dark:bg-gray-950 shadow-xl z-50",
+          "transform transition-transform duration-300 ease-out overflow-hidden",
           isVisible ? "translate-x-0" : "translate-x-full"
         )}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b">
             <h2 className="font-semibold text-lg">Detalle de Tarea</h2>
@@ -278,7 +278,7 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
             <div className="p-4 space-y-6">
               {/* Task Title & Badges */}
               <div className="space-y-3">
-                <h3 className="font-medium text-base leading-tight">{task.title}</h3>
+                <h3 className="font-medium text-base leading-tight break-words">{task.title}</h3>
                 <div className="flex flex-wrap gap-2">
                   <Badge variant="outline" className={priorityColors[task.priority]}>
                     {task.priority}
@@ -288,9 +288,9 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
                       {email.category}
                     </Badge>
                   )}
-                  <Badge variant="secondary" className="text-xs">
+                  {/* <Badge variant="secondary" className="text-xs">
                     {task.aiConfidence}% confianza IA
-                  </Badge>
+                  </Badge> */}
                 </div>
               </div>
 
@@ -305,28 +305,28 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
                   </h4>
 
                   {/* Sender */}
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Avatar className="h-10 w-10 flex-shrink-0">
                       <AvatarFallback className="bg-blue-100 text-blue-700">
                         {getInitials(email.senderName)}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <p className="font-medium text-sm">{email.senderName}</p>
-                      <p className="text-xs text-muted-foreground">{email.senderId}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm truncate">{email.senderName}</p>
+                      <p className="text-xs text-muted-foreground truncate">{email.senderId}</p>
                     </div>
                   </div>
 
                   {/* Subject */}
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Asunto</p>
-                    <p className="text-sm font-medium">{email.subject}</p>
+                    <p className="text-sm font-medium break-words">{email.subject}</p>
                   </div>
 
                   {/* Date */}
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    {format(new Date(email.receivedAt), "PPP 'a las' p", { locale: es })}
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
+                    <Calendar className="h-4 w-4 flex-shrink-0" />
+                    <span className="break-words">{format(new Date(email.receivedAt), "PPP 'a las' p", { locale: es })}</span>
                   </div>
 
                   {/* Body */}
@@ -350,7 +350,7 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
                       <Tag className="h-4 w-4 text-muted-foreground" />
                       Descripción de Tarea
                     </h4>
-                    <p className="text-sm text-muted-foreground">{task.description}</p>
+                    <p className="text-sm text-muted-foreground break-words">{task.description}</p>
                   </div>
                   <Separator />
                 </>
@@ -501,7 +501,7 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
                             </div>
                           </div>
                         ) : (
-                          <p className="text-sm mt-2">{comment.content}</p>
+                          <p className="text-sm mt-2 break-words">{comment.content}</p>
                         )}
                       </div>
                     ))}
