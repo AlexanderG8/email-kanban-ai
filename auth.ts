@@ -3,6 +3,7 @@ import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import type { Adapter } from "next-auth/adapters";
+import { authConfig } from "./auth.config";
 
 // Extend types for custom session properties
 declare module "next-auth" {
@@ -13,16 +14,11 @@ declare module "next-auth" {
   }
 }
 
-
+// Extiende la configuración base con PrismaAdapter y callbacks pesados
+// Esta configuración completa NO se usa en el middleware
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(prisma) as Adapter,
-  pages: {
-    signIn: "/login",
-  },
-  session: {
-    strategy: "jwt",
-    maxAge: 7 * 24 * 60 * 60, // 7 días
-  },
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -37,6 +33,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    ...authConfig.callbacks,
     async signIn() {
       // Permitir el inicio de sesión
       return true;
@@ -104,5 +101,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
   },
-  trustHost: true,
 });
