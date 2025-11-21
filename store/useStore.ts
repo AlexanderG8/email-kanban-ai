@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { shallow } from "zustand/shallow";
 import { useMemo } from "react";
 
 // Types based on Prisma schema
@@ -247,14 +246,14 @@ export const useStore = create<Store>()(
 
 // Selector hooks for common use cases
 export const useUser = () => useStore((state) => state.user);
-export const useEmails = () => useStore((state) => state.emails, shallow);
-export const useTasks = () => useStore((state) => state.tasks, shallow);
+export const useEmails = (): Email[] => useStore((state) => state.emails);
+export const useTasks = (): Task[] => useStore((state) => state.tasks);
 export const useFilters = () => useStore((state) => state.filters);
 export const useImportProgress = () => useStore((state) => state.importProgress);
 
 // Filtered data selectors with stable references using useMemo
-export const useFilteredEmails = () => {
-  const emails = useStore((state) => state.emails, shallow);
+export const useFilteredEmails = (): Email[] => {
+  const emails = useStore((state) => state.emails);
   const filters = useStore((state) => state.filters);
 
   return useMemo(() => {
@@ -279,9 +278,9 @@ export const useFilteredEmails = () => {
   }, [emails, filters.category, filters.search]);
 };
 
-export const useFilteredTasks = () => {
-  const tasks = useStore((state) => state.tasks, shallow);
-  const emails = useStore((state) => state.emails, shallow);
+export const useFilteredTasks = (): Task[] => {
+  const tasks = useStore((state) => state.tasks);
+  const emails = useStore((state) => state.emails);
   const filters = useStore((state) => state.filters);
 
   return useMemo(() => {
@@ -319,8 +318,8 @@ export const useFilteredTasks = () => {
 };
 
 // Task by status selectors
-export const useTasksByStatus = (status: Task["status"]) => {
-  const tasks = useStore((state) => state.tasks, shallow);
+export const useTasksByStatus = (status: Task["status"]): Task[] => {
+  const tasks = useStore((state) => state.tasks);
 
   return useMemo(
     () => tasks.filter((task) => task.status === status),
