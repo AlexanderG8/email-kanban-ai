@@ -31,6 +31,9 @@ import {
   Settings,
   ChevronDown,
   Loader2,
+  LayoutDashboard,
+  Mail,
+  BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useStore } from "@/store/useStore";
@@ -91,10 +94,35 @@ export function Header({ showSearch = false, showFilters = false }: HeaderProps)
     <>
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
-          {/* Logo */}
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <Logo size="sm" />
-          </Link>
+          {/* Logo with Navigation Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex items-center gap-2 px-2 hover:bg-transparent">
+                <Logo size="sm" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard" className="flex items-center cursor-pointer">
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  <span>Kanban</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/emailsprocesados" className="flex items-center cursor-pointer">
+                  <Mail className="mr-2 h-4 w-4" />
+                  <span>Emails Procesados</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/analisis" className="flex items-center cursor-pointer">
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  <span>Estadísticas</span>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Center - Search & Filters */}
           {(showSearch || showFilters) && (
@@ -140,12 +168,6 @@ export function Header({ showSearch = false, showFilters = false }: HeaderProps)
                   <Link href="/dashboard/perfil" className="flex items-center cursor-pointer">
                     <User className="mr-2 h-4 w-4" />
                     <span>Ver Perfil</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/perfil" className="flex items-center cursor-pointer">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Configuración</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
