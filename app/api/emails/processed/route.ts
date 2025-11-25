@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
     const category = searchParams.get("category");
+    const taskStatus = searchParams.get("taskStatus");
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "50");
 
@@ -83,6 +84,20 @@ export async function GET(req: NextRequest) {
         );
       }
       where.category = category;
+    }
+
+    // Filtro por estado de tareas
+    if (taskStatus && taskStatus !== "Todas") {
+      if (taskStatus === "Con Tareas") {
+        where.hasTask = true;
+      } else if (taskStatus === "Sin Tareas") {
+        where.hasTask = false;
+      } else {
+        return NextResponse.json(
+          { error: "Estado de tareas invalido" },
+          { status: 400 }
+        );
+      }
     }
 
     // Calcular skip para paginacion

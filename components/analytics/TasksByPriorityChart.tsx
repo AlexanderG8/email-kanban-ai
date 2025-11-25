@@ -26,7 +26,7 @@ const STATUS_COLORS: Record<string, string> = {
   Pendiente: "#f59e0b", // amber-500
   "En Progreso": "#3b82f6", // blue-500
   Completado: "#10b981", // green-500
-  Cancelado: "#ef4444", // red-500
+  // Cancelado: "#ef4444", // red-500
 };
 
 export function TasksByPriorityChart({ data }: TasksByPriorityChartProps) {
@@ -36,7 +36,7 @@ export function TasksByPriorityChart({ data }: TasksByPriorityChartProps) {
     Pendiente: info.byStatus["Pendiente"] || 0,
     "En Progreso": info.byStatus["En Progreso"] || 0,
     Completado: info.byStatus["Completado"] || 0,
-    Cancelado: info.byStatus["Cancelado"] || 0,
+    // Cancelado: info.byStatus["Cancelado"] || 0,
     total: info.total,
   }));
 
@@ -90,11 +90,11 @@ export function TasksByPriorityChart({ data }: TasksByPriorityChartProps) {
                 stackId="a"
                 fill={STATUS_COLORS.Completado}
               />
-              <Bar
+              {/* <Bar
                 dataKey="Cancelado"
                 stackId="a"
                 fill={STATUS_COLORS.Cancelado}
-              />
+              /> */}
             </BarChart>
           </ResponsiveContainer>
         ) : (

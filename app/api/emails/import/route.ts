@@ -133,6 +133,7 @@ export async function POST() {
       let emailsWithTasks = 0;
       let tasksCreated = 0;
       let emailsSkipped = 0;
+      let totalTokensUsed = 0;
 
       for (const emailData of emails) {
         try {
@@ -147,7 +148,8 @@ export async function POST() {
           }
 
           // Classify email with Gemini
-          const classification = await classifyEmail(emailData);
+          const { classification, tokensUsed } = await classifyEmail(emailData);
+          totalTokensUsed += tokensUsed;
 
           // Skip spam emails
           if (classification.category === "Spam") {
@@ -209,13 +211,22 @@ export async function POST() {
         },
       });
 
-      // 10. Update user's last import date
-      await prisma.user.update({
+      // 10. Update user's last import date and token usage
+      const updatedUser = await prisma.user.update({
         where: { id: user.id },
         data: {
           lastImportAt: new Date(),
+          tokensUsed: {
+            increment: totalTokensUsed,
+          },
+        },
+        select: {
+          id: true,
+          tokensUsed: true,
         },
       });
+
+      console.log(`✅ Import completed. Tokens used in this import: ${totalTokensUsed} | User total: ${updatedUser.tokensUsed}`);
 
       // 11. Return summary
       return NextResponse.json({

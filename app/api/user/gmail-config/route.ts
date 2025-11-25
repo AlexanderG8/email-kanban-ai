@@ -147,6 +147,7 @@ export async function GET() {
         gmailApiKey: true,
         referenceDate: true,
         lastImportAt: true,
+        tokensUsed: true,
       },
     });
 
@@ -188,6 +189,7 @@ export async function GET() {
         image: user.image,
         referenceDate: user.referenceDate,
         lastImportAt: user.lastImportAt,
+        tokensUsed: user.tokensUsed,
       },
     });
 

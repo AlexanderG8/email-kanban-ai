@@ -143,7 +143,7 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
         {importState === "importing" && (
           <>
             <DialogHeader>
-              <DialogTitle>Importando emails...</DialogTitle>
+              <DialogTitle>Sincronizando emails...</DialogTitle>
               <DialogDescription>
                 Por favor espera mientras procesamos tus emails.
               </DialogDescription>

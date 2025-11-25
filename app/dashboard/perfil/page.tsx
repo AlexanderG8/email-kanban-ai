@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
 import {
   User,
   Mail,
@@ -36,6 +37,7 @@ interface UserConfig {
   image: string | null;
   referenceDate: string | null;
   lastImportAt: string | null;
+  tokensUsed: number;
 }
 
 export default function PerfilPage() {
@@ -123,7 +125,7 @@ export default function PerfilPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 dark:from-gray-950 dark:to-blue-950/30">
         <Header />
-        <div className="container max-w-4xl py-8 px-4">
+        <div className="container max-w-4xl mx-auto py-8 px-4">
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
             <span className="ml-3 text-muted-foreground">Cargando perfil...</span>
@@ -137,7 +139,7 @@ export default function PerfilPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 dark:from-gray-950 dark:to-blue-950/30">
       <Header />
 
-      <div className="container max-w-4xl py-8 px-4">
+      <div className="container max-w-4xl mx-auto py-8 px-4">
         {/* Back button */}
         <div className="mb-6">
           <Link href="/dashboard">
@@ -298,6 +300,64 @@ export default function PerfilPage() {
                   </Link>
                 )}
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Token Usage Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <RefreshCw className="h-5 w-5" />
+                Uso de Tokens de IA
+              </CardTitle>
+              <CardDescription>
+                Seguimiento del consumo de tokens de Gemini AI
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Tokens utilizados</span>
+                  <span className="text-2xl font-bold">
+                    {userConfig?.tokensUsed?.toLocaleString() || 0}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <span>Límite mensual</span>
+                  <span>50,000</span>
+                </div>
+                <Progress
+                  value={((userConfig?.tokensUsed || 0) / 50000) * 100}
+                  className="h-2"
+                />
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>
+                    {(((userConfig?.tokensUsed || 0) / 50000) * 100).toFixed(1)}% utilizado
+                  </span>
+                  <span>
+                    {(50000 - (userConfig?.tokensUsed || 0)).toLocaleString()} restantes
+                  </span>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="text-sm text-muted-foreground">
+                <p>
+                  Los tokens se consumen al clasificar emails con IA. Cada importación
+                  consume aproximadamente 500-1000 tokens por email procesado.
+                </p>
+              </div>
+
+              {userConfig?.tokensUsed && userConfig.tokensUsed > 45000 && (
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Te estás acercando al límite mensual de tokens.
+                    Considera optimizar el uso o contactar soporte.
+                  </AlertDescription>
+                </Alert>
+              )}
             </CardContent>
           </Card>
 
