@@ -24,6 +24,7 @@ export interface EmailFilters {
   startDate: Date | undefined;
   endDate: Date | undefined;
   category: string;
+  taskStatus: string;
 }
 
 interface FilterBarProps {
@@ -35,12 +36,14 @@ export function FilterBar({ onSearch, isLoading = false }: FilterBarProps) {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [category, setCategory] = useState<string>("Todas");
+  const [taskStatus, setTaskStatus] = useState<string>("Todas");
 
   const handleSearch = () => {
     onSearch({
       startDate,
       endDate,
       category,
+      taskStatus,
     });
   };
 
@@ -48,21 +51,23 @@ export function FilterBar({ onSearch, isLoading = false }: FilterBarProps) {
     setStartDate(undefined);
     setEndDate(undefined);
     setCategory("Todas");
+    setTaskStatus("Todas");
     onSearch({
       startDate: undefined,
       endDate: undefined,
       category: "Todas",
+      taskStatus: "Todas",
     });
   };
 
-  const hasFilters = startDate || endDate || category !== "Todas";
+  const hasFilters = startDate || endDate || category !== "Todas" || taskStatus !== "Todas";
 
   return (
-    <div className="bg-white dark:bg-gray-950 border rounded-lg p-4 mb-6">
-      <div className="flex flex-col gap-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="bg-white dark:bg-gray-950 border rounded-lg p-3 mb-6">
+      <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Fecha Inicio */}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <label className="text-sm font-medium">Fecha Inicio</label>
             <Popover>
               <PopoverTrigger asChild>
@@ -94,7 +99,7 @@ export function FilterBar({ onSearch, isLoading = false }: FilterBarProps) {
           </div>
 
           {/* Fecha Fin */}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <label className="text-sm font-medium">Fecha Fin</label>
             <Popover>
               <PopoverTrigger asChild>
@@ -130,10 +135,10 @@ export function FilterBar({ onSearch, isLoading = false }: FilterBarProps) {
           </div>
 
           {/* Categoria */}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <label className="text-sm font-medium">Categoria</label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger>
+            <Select value={category} onValueChange={setCategory} >
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -141,6 +146,21 @@ export function FilterBar({ onSearch, isLoading = false }: FilterBarProps) {
                 <SelectItem value="Cliente">Cliente</SelectItem>
                 <SelectItem value="Lead">Lead</SelectItem>
                 <SelectItem value="Interno">Interno</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Estado de Tareas */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Estado de Tareas</label>
+            <Select value={taskStatus} onValueChange={setTaskStatus}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Todas">Todas</SelectItem>
+                <SelectItem value="Con Tareas">Con Tareas</SelectItem>
+                <SelectItem value="Sin Tareas">Sin Tareas</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -101,7 +101,7 @@ export default function DashboardPage() {
 
   if (status === "loading" || isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
+      <div className="h-screen bg-gray-50 dark:bg-gray-950 flex flex-col overflow-hidden">
         <Header showSearch showFilters />
         <DashboardSkeleton />
       </div>
@@ -109,10 +109,10 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
+    <div className="h-screen bg-gray-50 dark:bg-gray-950 flex flex-col overflow-hidden">
       <Header showSearch showFilters />
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 h-0 overflow-hidden">
         {/* Email Sidebar */}
         <EmailBandeja
           onImportClick={() => setIsImportModalOpen(true)}
@@ -120,8 +120,10 @@ export default function DashboardPage() {
         />
 
         {/* Kanban Board */}
-        <div className="flex-1 p-4 overflow-hidden">
-          <KanbanBoard onTaskClick={handleTaskClick} />
+        <div className="flex-1 h-full p-4 overflow-hidden">
+          <div className="h-full">
+            <KanbanBoard onTaskClick={handleTaskClick} />
+          </div>
         </div>
       </div>
 

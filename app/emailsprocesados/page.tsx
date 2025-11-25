@@ -25,6 +25,7 @@ export default function EmailsProcessedPage() {
     startDate: undefined,
     endDate: undefined,
     category: "Todas",
+    taskStatus: "Todas",
   });
   const [selectedEmail, setSelectedEmail] = useState<EmailWithTasks | null>(
     null
@@ -52,6 +53,10 @@ export default function EmailsProcessedPage() {
 
       if (newFilters.category && newFilters.category !== "Todas") {
         params.append("category", newFilters.category);
+      }
+
+      if (newFilters.taskStatus && newFilters.taskStatus !== "Todas") {
+        params.append("taskStatus", newFilters.taskStatus);
       }
 
       const response = await fetch(`/api/emails/processed?${params}`);

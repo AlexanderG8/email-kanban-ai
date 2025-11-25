@@ -75,13 +75,14 @@ INSTRUCCIONES:
 
 /**
  * Classify an email using Gemini AI
+ * Returns classification and token usage
  */
-export async function classifyEmail(email: EmailData): Promise<EmailClassification> {
+export async function classifyEmail(email: EmailData): Promise<{ classification: EmailClassification; tokensUsed: number }> {
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
     console.warn("GEMINI_API_KEY not configured, using fallback classification");
-    return getFallbackClassification();
+    return { classification: getFallbackClassification(), tokensUsed: 0 };
   }
 
   try {
@@ -92,17 +93,21 @@ export async function classifyEmail(email: EmailData): Promise<EmailClassificati
       apiKey: apiKey,
     });
 
-    const { object } = await generateObject({
+    const result = await generateObject({
       model: google("gemini-2.5-flash-lite"),
       schema: ClassificationSchema,
       prompt,
       temperature: 0.1, // Low temperature for more consistent results
     });
 
-    return object;
+    // Calculate total tokens used
+    // Gemini returns: inputTokens, outputTokens, totalTokens
+    const tokensUsed = result.usage?.totalTokens || 0;
+
+    return { classification: result.object, tokensUsed };
   } catch (error) {
     console.error("Error classifying email with Gemini:", error);
-    return getFallbackClassification();
+    return { classification: getFallbackClassification(), tokensUsed: 0 };
   }
 }
 
@@ -122,22 +127,25 @@ function getFallbackClassification(): EmailClassification {
 /**
  * Batch classify multiple emails
  * Processes sequentially to avoid rate limits
+ * Returns classifications and total tokens used
  */
 export async function classifyEmails(
   emails: EmailData[],
   onProgress?: (processed: number, total: number) => void
-): Promise<Map<string, EmailClassification>> {
-  const results = new Map<string, EmailClassification>();
+): Promise<{ classifications: Map<string, EmailClassification>; totalTokens: number }> {
+  const classifications = new Map<string, EmailClassification>();
+  let totalTokens = 0;
 
   for (let i = 0; i < emails.length; i++) {
     const email = emails[i];
 
     try {
-      const classification = await classifyEmail(email);
-      results.set(email.gmailId, classification);
+      const { classification, tokensUsed } = await classifyEmail(email);
+      classifications.set(email.gmailId, classification);
+      totalTokens += tokensUsed;
     } catch (error) {
       console.error(`Error classifying email ${email.gmailId}:`, error);
-      results.set(email.gmailId, getFallbackClassification());
+      classifications.set(email.gmailId, getFallbackClassification());
     }
 
     if (onProgress) {
@@ -150,7 +158,7 @@ export async function classifyEmails(
     }
   }
 
-  return results;
+  return { classifications, totalTokens };
 }
 
 /**

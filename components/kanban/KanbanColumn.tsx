@@ -82,11 +82,11 @@ export function KanbanColumn({
       <div
         ref={setNodeRef}
         className={cn(
-          "flex-1 bg-gray-50/50 rounded-b-lg border border-t-0 transition-colors",
+          "flex-1 h-0 bg-gray-50/50 rounded-b-lg border border-t-0 transition-colors",
           isOver && "bg-blue-50/50 border-blue-300 border-dashed"
         )}
       >
-        <ScrollArea className="h-full">
+        <ScrollArea className="h-full w-full">
           <SortableContext
             items={tasks.map((t) => t.id)}
             strategy={verticalListSortingStrategy}
