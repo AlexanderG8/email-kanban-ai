@@ -274,16 +274,6 @@ export default function IntegracionPage() {
                 </>
               )}
             </Button>
-
-            <Button
-              variant="ghost"
-              onClick={handleSkip}
-              disabled={isLoading}
-              className="w-full"
-              size="lg"
-            >
-              Saltar por ahora
-            </Button>
           </div>
 
           {/* Help Link */}

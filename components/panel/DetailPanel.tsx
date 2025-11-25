@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { formatDistanceToNow, format } from "date-fns";
 import { es } from "date-fns/locale";
 import DOMPurify from "dompurify";
+import { useSession } from "next-auth/react";
 import {
   X,
   Mail,
@@ -77,6 +78,7 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [isSavingDate, setIsSavingDate] = useState(false);
 
+  const { data: session } = useSession();
   const tasks = useTasks();
   const emails = useEmails();
   const comments = useStore((state) => state.comments);
@@ -84,7 +86,8 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
   const addComment = useStore((state) => state.addComment);
   const updateComment = useStore((state) => state.updateComment);
   const setComments = useStore((state) => state.setComments);
-  const user = useStore((state) => state.user);
+
+  const user = session?.user;
 
   // Find the task and email
   const task = tasks.find((t) => t.id === taskId);
@@ -132,8 +135,10 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
 
     try {
       const response = await fetch(`/api/comments?taskId=${taskId}`);
+
       if (response.ok) {
         const data = await response.json();
+
         // Parse dates
         const parsedComments = (data.comments || []).map((c: Comment & { createdAt: string; updatedAt: string }) => ({
           ...c,
@@ -211,7 +216,14 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
 
   // Handle add comment
   const handleAddComment = async () => {
-    if (!newComment.trim() || !taskId || !user) return;
+    if (!newComment.trim() || !taskId || !user) {
+      if (!newComment.trim()) {
+        toast.error("El comentario no puede estar vacío");
+      } else if (!user) {
+        toast.error("Debes iniciar sesión para comentar");
+      }
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -224,9 +236,13 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
         }),
       });
 
-      if (!response.ok) throw new Error("Error al guardar comentario");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Error desconocido" }));
+        throw new Error(errorData.error || "Error al guardar comentario");
+      }
 
       const data = await response.json();
+
       addComment({
         ...data.comment,
         createdAt: new Date(data.comment.createdAt),
@@ -234,10 +250,11 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
       });
 
       setNewComment("");
-      toast.success("Comentario agregado");
+      toast.success("Comentario agregado exitosamente");
     } catch (error) {
       console.error("Error adding comment:", error);
-      toast.error("Error al agregar comentario");
+      const errorMessage = error instanceof Error ? error.message : "Error al agregar comentario";
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -245,7 +262,10 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
 
   // Handle edit comment
   const handleEditComment = async (commentId: string) => {
-    if (!editingContent.trim()) return;
+    if (!editingContent.trim()) {
+      toast.error("El comentario no puede estar vacío");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -255,7 +275,10 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
         body: JSON.stringify({ content: editingContent.trim() }),
       });
 
-      if (!response.ok) throw new Error("Error al editar comentario");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Error desconocido" }));
+        throw new Error(errorData.error || "Error al editar comentario");
+      }
 
       updateComment(commentId, {
         content: editingContent.trim(),
@@ -264,10 +287,11 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
 
       setEditingCommentId(null);
       setEditingContent("");
-      toast.success("Comentario actualizado");
+      toast.success("Comentario actualizado exitosamente");
     } catch (error) {
       console.error("Error editing comment:", error);
-      toast.error("Error al editar comentario");
+      const errorMessage = error instanceof Error ? error.message : "Error al editar comentario";
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
