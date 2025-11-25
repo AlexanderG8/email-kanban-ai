@@ -26,8 +26,7 @@ export function CompletionTimelineChart({ data }: CompletionTimelineChartProps) 
     dateFormatted: format(parseISO(item.date), "dd/MM", { locale: es }),
   }));
 
-  const hasData = data.length > 0 && data.some((d) => d.completed > 0 || d.created > 0);
-
+  const hasData = data.length > 0;
   return (
     <Card>
       <CardHeader>

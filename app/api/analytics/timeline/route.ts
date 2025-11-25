@@ -15,9 +15,10 @@ export async function GET(req: NextRequest) {
     const daysParam = searchParams.get("days");
     const days = daysParam ? parseInt(daysParam) : 30;
 
-    // Calculate date range
+    // Calculate date range - start from beginning of day N days ago to end of today
     const now = new Date();
-    const startDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+    const startDate = new Date(now.getTime() - (days - 1) * 24 * 60 * 60 * 1000);
+    startDate.setHours(0, 0, 0, 0); // Start of the first day
 
     // Fetch completed tasks in the period
     const completedTasks = await prisma.task.findMany({

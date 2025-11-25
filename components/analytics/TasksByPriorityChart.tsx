@@ -8,8 +8,8 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
+  Cell,
 } from "recharts";
 
 interface TasksByPriorityChartProps {
@@ -22,21 +22,17 @@ interface TasksByPriorityChartProps {
   >;
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  Pendiente: "#f59e0b", // amber-500
-  "En Progreso": "#3b82f6", // blue-500
-  Completado: "#10b981", // green-500
-  // Cancelado: "#ef4444", // red-500
+const PRIORITY_COLORS: Record<string, string> = {
+  Urgente: "#ef4444", // red-500
+  Alta: "#f59e0b", // amber-500
+  Media: "#3b82f6", // blue-500
+  Baja: "#10b981", // green-500
 };
 
 export function TasksByPriorityChart({ data }: TasksByPriorityChartProps) {
-  // Transform data for stacked bar chart
+  // Transform data for bar chart by priority
   const chartData = Object.entries(data).map(([priority, info]) => ({
     priority,
-    Pendiente: info.byStatus["Pendiente"] || 0,
-    "En Progreso": info.byStatus["En Progreso"] || 0,
-    Completado: info.byStatus["Completado"] || 0,
-    // Cancelado: info.byStatus["Cancelado"] || 0,
     total: info.total,
   }));
 
@@ -71,30 +67,20 @@ export function TasksByPriorityChart({ data }: TasksByPriorityChartProps) {
               <XAxis type="number" />
               <YAxis type="category" dataKey="priority" width={80} />
               <Tooltip
-                formatter={(value: number, name: string) => [value, name]}
+                formatter={(value: number) => [value, "Tareas"]}
                 cursor={{ fill: "rgba(0, 0, 0, 0.1)" }}
               />
-              <Legend />
               <Bar
-                dataKey="Pendiente"
-                stackId="a"
-                fill={STATUS_COLORS.Pendiente}
-              />
-              <Bar
-                dataKey="En Progreso"
-                stackId="a"
-                fill={STATUS_COLORS["En Progreso"]}
-              />
-              <Bar
-                dataKey="Completado"
-                stackId="a"
-                fill={STATUS_COLORS.Completado}
-              />
-              {/* <Bar
-                dataKey="Cancelado"
-                stackId="a"
-                fill={STATUS_COLORS.Cancelado}
-              /> */}
+                dataKey="total"
+                radius={[0, 4, 4, 0]}
+              >
+                {chartData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={PRIORITY_COLORS[entry.priority] || "#8b5cf6"}
+                  />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         ) : (
