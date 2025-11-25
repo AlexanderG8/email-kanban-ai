@@ -58,7 +58,7 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || data.error || "Error de importación");
+        throw new Error(data.message || data.error || "Error de sincronización");
       }
 
       setProgress(100);
@@ -114,10 +114,10 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Mail className="h-5 w-5 text-blue-600" />
-                Importar Emails
+                Sincronizar Emails
               </DialogTitle>
               <DialogDescription>
-                Se importarán hasta 20 emails nuevos de tu cuenta de Gmail y se
+                Se sincronizarán hasta 20 emails nuevos de tu cuenta de Gmail y se
                 clasificarán automáticamente con IA.
               </DialogDescription>
             </DialogHeader>
@@ -125,7 +125,7 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700">
                 <p className="font-medium">Nota:</p>
                 <ul className="list-disc list-inside mt-1 space-y-1">
-                  <li>Solo se importan emails no procesados</li>
+                  <li>Solo se sincronizan emails no procesados</li>
                   <li>Los emails spam se descartan automáticamente</li>
                   <li>Las tareas se crean según la clasificación de IA</li>
                 </ul>
@@ -135,7 +135,7 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
               <Button variant="outline" onClick={handleClose}>
                 Cancelar
               </Button>
-              <Button onClick={handleImport}>Iniciar Importación</Button>
+              <Button onClick={handleImport}>Iniciar Sincronización</Button>
             </DialogFooter>
           </>
         )}
@@ -163,7 +163,7 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-green-600">
                 <CheckCircle2 className="h-5 w-5" />
-                Importación Completada
+                Sincronización Completada
               </DialogTitle>
             </DialogHeader>
             <div className="py-4">
@@ -213,7 +213,7 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-red-600">
                 <XCircle className="h-5 w-5" />
-                Error de Importación
+                Error de Sincronización
               </DialogTitle>
             </DialogHeader>
             <div className="py-4">
