@@ -36,7 +36,7 @@ export async function POST() {
       return NextResponse.json(
         {
           error: "Gmail no configurado",
-          message: "Debes configurar Gmail antes de importar emails.",
+          message: "Debes configurar Gmail antes de sincronizar emails.",
         },
         { status: 400 }
       );
@@ -53,8 +53,8 @@ export async function POST() {
     if (activeImport) {
       return NextResponse.json(
         {
-          error: "Importación en progreso",
-          message: "Ya hay una importación en curso. Espera a que termine.",
+          error: "Sincronización en progreso",
+          message: "Ya hay una sincronización en curso. Espera a que termine.",
         },
         { status: 409 }
       );
@@ -82,7 +82,7 @@ export async function POST() {
         return NextResponse.json(
           {
             error: "Rate limit",
-            message: `Espera ${waitMinutes} minuto(s) antes de importar nuevamente.`,
+            message: `Espera ${waitMinutes} minuto(s) antes de sincronizar nuevamente.`,
           },
           { status: 429 }
         );
@@ -119,7 +119,7 @@ export async function POST() {
 
         return NextResponse.json({
           success: true,
-          message: "No hay nuevos emails para importar",
+          message: "No hay nuevos emails para sincronizar",
           summary: {
             emailsProcessed: 0,
             emailsWithTasks: 0,
@@ -231,7 +231,7 @@ export async function POST() {
       // 11. Return summary
       return NextResponse.json({
         success: true,
-        message: "Importación completada exitosamente",
+        message: "Sincronización completada exitosamente",
         summary: {
           emailsProcessed: emails.length,
           emailsWithTasks,
@@ -263,7 +263,7 @@ export async function POST() {
 
     return NextResponse.json(
       {
-        error: "Error de importación",
+        error: "Error de sincronización",
         message: errorMessage,
       },
       { status: 500 }

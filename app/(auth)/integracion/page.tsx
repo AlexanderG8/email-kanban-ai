@@ -116,7 +116,7 @@ export default function IntegracionPage() {
       }
 
       toast.success("¡Configuración completada!", {
-        description: "Ya puedes importar tus emails.",
+        description: "Ya puedes sincronizar tus emails.",
       });
 
       router.push("/dashboard");
@@ -166,7 +166,7 @@ export default function IntegracionPage() {
                 Configura tu integración con Gmail
               </CardTitle>
               <CardDescription className="text-base mt-2">
-                Verifica que todo esté listo para importar tus emails
+                Verifica que todo esté listo para sincronizar tus emails
               </CardDescription>
             </div>
           </div>

@@ -247,7 +247,7 @@ export default function PerfilPage() {
                 />
                 <InfoRow
                   icon={<Clock className="h-4 w-4" />}
-                  label="Última importación"
+                  label="Última sincronización"
                   value={
                     userConfig?.lastImportAt
                       ? new Date(userConfig.lastImportAt).toLocaleDateString("es-ES", {
@@ -344,7 +344,7 @@ export default function PerfilPage() {
 
               <div className="text-sm text-muted-foreground">
                 <p>
-                  Los tokens se consumen al clasificar emails con IA. Cada importación
+                  Los tokens se consumen al clasificar emails con IA. Cada sincronización
                   consume aproximadamente 500-1000 tokens por email procesado.
                 </p>
               </div>

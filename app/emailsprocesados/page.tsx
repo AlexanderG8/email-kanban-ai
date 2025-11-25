@@ -152,7 +152,7 @@ export default function EmailsProcessedPage() {
               No se encontraron emails
             </h3>
             <p className="text-muted-foreground">
-              Intenta ajustar los filtros o importar nuevos emails desde el
+              Intenta ajustar los filtros o sincronizar nuevos emails desde el
               dashboard.
             </p>
           </div>
