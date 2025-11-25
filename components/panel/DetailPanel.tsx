@@ -8,6 +8,7 @@ import {
   X,
   Mail,
   Calendar,
+  CalendarClock,
   Tag,
   AlertCircle,
   MessageSquare,
@@ -30,6 +31,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useStore, useTasks, useEmails, type Task, type Email, type Comment } from "@/store/useStore";
@@ -66,6 +73,9 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
   const [editingContent, setEditingContent] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("");
   const [isSavingStatus, setIsSavingStatus] = useState(false);
+  const [isEditingDate, setIsEditingDate] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [isSavingDate, setIsSavingDate] = useState(false);
 
   const tasks = useTasks();
   const emails = useEmails();
@@ -92,9 +102,10 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
   useEffect(() => {
     if (taskId) {
       setIsVisible(true);
-      // Set initial status
+      // Set initial status and date
       if (task) {
         setSelectedStatus(task.status);
+        setSelectedDate(task.dueDate ? new Date(task.dueDate) : undefined);
       }
       // Load comments
       loadComments();
@@ -144,6 +155,58 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
       .join("")
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  // Get due date status with color coding
+  const getDueDateStatus = (dueDate: Date | null) => {
+    if (!dueDate) return null;
+
+    const now = new Date();
+    const due = new Date(dueDate);
+    const diffDays = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) return { color: "text-red-600", label: "Vencida", bg: "bg-red-50" };
+    if (diffDays === 0) return { color: "text-red-600", label: "Vence hoy", bg: "bg-red-50" };
+    if (diffDays <= 2) return { color: "text-orange-600", label: "Muy próxima", bg: "bg-orange-50" };
+    if (diffDays <= 7) return { color: "text-yellow-600", label: "Próxima", bg: "bg-yellow-50" };
+    return { color: "text-green-600", label: "A tiempo", bg: "bg-green-50" };
+  };
+
+  // Handle date change
+  const handleDateChange = async (date: Date | undefined) => {
+    if (!task || !date) return;
+
+    // Validar fecha no pasada
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selectedDay = new Date(date);
+    selectedDay.setHours(0, 0, 0, 0);
+
+    if (selectedDay < today) {
+      toast.error("No se puede asignar una fecha pasada");
+      return;
+    }
+
+    setIsSavingDate(true);
+    try {
+      const response = await fetch(`/api/tasks/${task.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dueDate: date.toISOString() }),
+      });
+
+      if (!response.ok) throw new Error("Error al actualizar fecha");
+
+      updateTask(task.id, { dueDate: date, updatedAt: new Date() });
+      setSelectedDate(date);
+      setIsEditingDate(false);
+      toast.success("Fecha de expiración actualizada");
+    } catch (error) {
+      console.error("Error updating date:", error);
+      toast.error("Error al actualizar fecha");
+    } finally {
+      setIsSavingDate(false);
+    }
   };
 
   // Handle add comment
@@ -292,6 +355,81 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
                     {task.aiConfidence}% confianza IA
                   </Badge> */}
                 </div>
+
+                {/* Fecha de Expiración */}
+                {task.dueDate && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <CalendarClock className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">
+                        {format(new Date(task.dueDate), "PPP", { locale: es })}
+                      </span>
+                      {getDueDateStatus(task.dueDate) && (
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-xs",
+                            getDueDateStatus(task.dueDate)?.color,
+                            getDueDateStatus(task.dueDate)?.bg
+                          )}
+                        >
+                          {getDueDateStatus(task.dueDate)?.label}
+                        </Badge>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 ml-auto"
+                      onClick={() => setIsEditingDate(true)}
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+
+                {/* DatePicker Popover */}
+                <Popover open={isEditingDate} onOpenChange={setIsEditingDate}>
+                  <PopoverTrigger asChild>
+                    <span />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={setSelectedDate}
+                      disabled={(date) => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const checkDate = new Date(date);
+                        checkDate.setHours(0, 0, 0, 0);
+                        return checkDate < today;
+                      }}
+                      initialFocus
+                      locale={es}
+                    />
+                    <div className="p-3 border-t flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handleDateChange(selectedDate)}
+                        disabled={isSavingDate || !selectedDate}
+                      >
+                        {isSavingDate ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          "Guardar"
+                        )}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setIsEditingDate(false)}
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               <Separator />

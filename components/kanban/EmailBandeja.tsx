@@ -7,7 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Mail,
-  Download,
+  RefreshCw,
   CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -116,8 +116,8 @@ export function EmailBandeja({ onImportClick, onEmailClick }: EmailBandejaProps)
             </>
           ) : (
             <>
-              <Download className="h-4 w-4 mr-2" />
-              Importar Gmails
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Sincronizar Gmails
             </>
           )}
         </Button>
