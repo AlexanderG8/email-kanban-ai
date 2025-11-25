@@ -125,7 +125,7 @@ export function EmailDetailModal({
           </div>
 
           {/* Content */}
-          <ScrollArea className="flex-1">
+          <ScrollArea className="flex-1 h-0">
             <div className="p-4 space-y-6">
               {/* Email Info */}
               <div className="space-y-3">

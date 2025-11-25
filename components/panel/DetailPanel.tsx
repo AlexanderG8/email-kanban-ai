@@ -337,7 +337,7 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
           </div>
 
           {/* Content */}
-          <ScrollArea className="flex-1">
+          <ScrollArea className="flex-1 h-0">
             <div className="p-4 space-y-6">
               {/* Task Title & Badges */}
               <div className="space-y-3">
@@ -351,7 +351,8 @@ export function DetailPanel({ taskId, onClose }: DetailPanelProps) {
                       {email.category}
                     </Badge>
                   )}
-                  {/* <Badge variant="secondary" className="text-xs">
+                  {/* Nota: Por implementar para la versión 2
+                  <Badge variant="secondary" className="text-xs">
                     {task.aiConfidence}% confianza IA
                   </Badge> */}
                 </div>

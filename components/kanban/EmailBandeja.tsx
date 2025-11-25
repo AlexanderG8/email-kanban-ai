@@ -82,7 +82,7 @@ export function EmailBandeja({ onImportClick, onEmailClick }: EmailBandejaProps)
   }
 
   return (
-    <div className="flex flex-col w-80 border-r bg-gray-50/50">
+    <div className="flex flex-col h-full w-80 border-r bg-gray-50/50">
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b bg-white">
         <div className="flex items-center gap-2">
@@ -124,7 +124,7 @@ export function EmailBandeja({ onImportClick, onEmailClick }: EmailBandejaProps)
       </div>
 
       {/* Email List */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 h-0">
         <div className="p-2 space-y-1">
           {emailsWithTasks.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
